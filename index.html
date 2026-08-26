@@ -304,13 +304,16 @@
 
         <option value="">공급처 선택</option>
 
-        <option value="CST">CST</option>
-
-        <option value="HPK">HPK</option>
-
-        <option value="NKO">NKO</option>
-
-        <option value="NBO">NBO</option>
+        <option value="CST">코스트코</option>
+        <option value="HP-K">현대프리미엄아울렛 김포</option>
+        <option value="HP-S">현대프리미엄아울렛 송도</option>
+        <option value="SSO-SH">신세계아울렛시흥</option>
+        <option value="NKO">나이키 공홈</option>
+        <option value="NBO">뉴발란스 공홈</option>
+        <option value="ABC">ABC마트</option>
+        <option value="LTD">롯데백화점</option>
+        <option value="SSG">신세계백화점</option>
+        <option value="MUS">무신사</option>
 
       </select>
 
@@ -619,22 +622,40 @@ function searchProduct(barcode) {
       clearTimeout(timeout);
 
 
-      try {
+     try {
 
-        showProductResult(result);
+  showProductResult(result);
 
-      }
+}
 
-      catch(error) {
+catch(error) {
 
-        console.error(error);
+  console.error(
+    "상품정보 표시 오류:",
+    error
+  );
 
-        setStatus(
-          "❌ 상품정보를 표시하는 중 오류가 발생했습니다.",
-          "error"
-        );
+  /*
+   * 상품정보가 이미 정상적으로 표시된 경우에는
+   * 전체 화면을 오류 상태로 바꾸지 않는다.
+   */
 
-      }
+  const productBox =
+    document.getElementById("product");
+
+  if (
+    !productBox ||
+    productBox.classList.contains("hidden")
+  ) {
+
+    setStatus(
+      "❌ 상품정보를 표시하는 중 오류가 발생했습니다.",
+      "error"
+    );
+
+  }
+
+}
 
 
       delete window[callbackName];
