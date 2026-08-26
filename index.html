@@ -196,10 +196,136 @@
       <span class="value" id="purchasePrice"></span>
     </div>
 
-    <div class="row">
+       <div class="row">
       <span class="label">현재재고</span>
       <span class="value" id="currentStock"></span>
     </div>
+
+  </div>
+
+
+  <!-- ==========================================
+       입고 등록
+  =========================================== -->
+
+  <div id="inboundForm"
+       class="product hidden">
+
+    <div class="product-title">
+      📦 입고 등록
+    </div>
+
+
+    <!-- 입고수량 -->
+
+    <div style="margin-top:15px;">
+
+      <label style="display:block;
+                    margin-bottom:6px;
+                    color:#777;">
+
+        입고수량
+
+      </label>
+
+      <input
+        type="number"
+        id="inboundQuantity"
+        value="1"
+        min="1"
+        step="1"
+        inputmode="numeric"
+        style="
+          width:100%;
+          padding:14px;
+          border:1px solid #ddd;
+          border-radius:10px;
+          font-size:17px;
+        "
+      >
+
+    </div>
+
+
+    <!-- 실제 매입가 -->
+
+    <div style="margin-top:15px;">
+
+      <label style="display:block;
+                    margin-bottom:6px;
+                    color:#777;">
+
+        실제 매입가
+
+      </label>
+
+      <input
+        type="number"
+        id="inboundPurchasePrice"
+        min="0"
+        step="100"
+        inputmode="numeric"
+        placeholder="실제 구입가격 입력"
+        style="
+          width:100%;
+          padding:14px;
+          border:1px solid #ddd;
+          border-radius:10px;
+          font-size:17px;
+        "
+      >
+
+    </div>
+
+
+    <!-- 공급처 -->
+
+    <div style="margin-top:15px;">
+
+      <label style="display:block;
+                    margin-bottom:6px;
+                    color:#777;">
+
+        공급처
+
+      </label>
+
+      <select
+        id="inboundSupplier"
+        style="
+          width:100%;
+          padding:14px;
+          border:1px solid #ddd;
+          border-radius:10px;
+          font-size:17px;
+          background:white;
+        "
+      >
+
+        <option value="">공급처 선택</option>
+
+        <option value="CST">CST</option>
+
+        <option value="HPK">HPK</option>
+
+        <option value="NKO">NKO</option>
+
+        <option value="NBO">NBO</option>
+
+      </select>
+
+    </div>
+
+
+    <!-- 입고 등록 버튼 -->
+
+    <button
+      id="inboundButton"
+      onclick="registerInboundFromPhone()">
+
+      🟢 입고 등록
+
+    </button>
 
   </div>
 
@@ -755,6 +881,373 @@ function formatNumber(value) {
   return (
     Number(value) || 0
   ).toLocaleString("ko-KR");
+
+}/* ==========================================
+   휴대폰 입고 등록
+========================================== */
+
+function registerInboundFromPhone() {
+
+  const barcodeText =
+    document.getElementById("barcode").innerText;
+
+
+  /*
+   * "인식된 바코드" 아래의 실제 값 추출
+   */
+
+  const barcodeLines =
+    barcodeText.split("\n");
+
+
+  const barcode =
+    String(
+      barcodeLines[1] || ""
+    ).trim();
+
+
+  const quantity =
+    Number(
+      document.getElementById(
+        "inboundQuantity"
+      ).value
+    ) || 0;
+
+
+  const purchasePrice =
+    Number(
+      document.getElementById(
+        "inboundPurchasePrice"
+      ).value
+    ) || 0;
+
+
+  const supplier =
+    document.getElementById(
+      "inboundSupplier"
+    ).value;
+
+
+  /*
+   * 입력값 확인
+   */
+
+  if (!barcode) {
+
+    alert(
+      "바코드를 확인할 수 없습니다."
+    );
+
+    return;
+
+  }
+
+
+  if (quantity <= 0) {
+
+    alert(
+      "입고수량을 입력해주세요."
+    );
+
+    return;
+
+  }
+
+
+  if (purchasePrice < 0) {
+
+    alert(
+      "실제 매입가를 확인해주세요."
+    );
+
+    return;
+
+  }
+
+
+  if (!supplier) {
+
+    alert(
+      "공급처를 선택해주세요."
+    );
+
+    return;
+
+  }
+
+
+  /*
+   * 버튼 잠금
+   */
+
+  const button =
+    document.getElementById(
+      "inboundButton"
+    );
+
+
+  button.disabled = true;
+
+  button.innerText =
+    "⏳ 입고 등록 중...";
+
+
+  /*
+   * JSONP callback
+   */
+
+  const callbackName =
+    "inboundCallback_" +
+    Date.now();
+
+
+  let finished = false;
+
+
+  const timeout =
+    setTimeout(function() {
+
+      if (finished) return;
+
+      finished = true;
+
+
+      delete window[callbackName];
+
+
+      if (script.parentNode) {
+
+        script.parentNode
+          .removeChild(script);
+
+      }
+
+
+      button.disabled = false;
+
+      button.innerText =
+        "🟢 입고 등록";
+
+
+      alert(
+        "입고 등록 시간이 초과되었습니다."
+      );
+
+    }, 15000);
+
+
+  /*
+   * 서버 응답
+   */
+
+  window[callbackName] =
+    function(result) {
+
+      if (finished) return;
+
+      finished = true;
+
+      clearTimeout(timeout);
+
+
+      try {
+
+        if (
+          result &&
+          result.success
+        ) {
+
+          /*
+           * 등록 성공
+           */
+
+          alert(
+            "✅ 입고 등록 완료!\n\n" +
+            "입고번호: " +
+            (result.inboundNumber || "-") +
+            "\nSKU: " +
+            (result.sku || "-") +
+            "\n입고수량: " +
+            formatNumber(
+              result.quantity
+            ) +
+            "개\n실제 매입가: " +
+            formatNumber(
+              result.purchasePrice
+            ) +
+            "원\n현재재고: " +
+            formatNumber(
+              result.currentStock
+            ) +
+            "개"
+          );
+
+
+          /*
+           * 화면의 현재재고도 갱신
+           */
+
+          document.getElementById(
+            "currentStock"
+          ).innerText =
+            formatNumber(
+              result.currentStock
+            ) + "개";
+
+
+          /*
+           * 버튼 원상복구
+           */
+
+          button.disabled = false;
+
+          button.innerText =
+            "🟢 입고 등록";
+
+
+          /*
+           * 입력값 초기화
+           */
+
+          document.getElementById(
+            "inboundQuantity"
+          ).value = 1;
+
+
+          /*
+           * 실제 매입가는
+           * 현재 등록한 가격 그대로 유지
+           */
+
+          document.getElementById(
+            "inboundSupplier"
+          ).value = "";
+
+
+        }
+
+        else {
+
+          alert(
+            "❌ 입고 등록 실패\n\n" +
+            (
+              result &&
+              result.message
+                ? result.message
+                : "알 수 없는 오류"
+            )
+          );
+
+
+          button.disabled = false;
+
+          button.innerText =
+            "🟢 입고 등록";
+
+        }
+
+      }
+
+      catch(error) {
+
+        console.error(error);
+
+
+        alert(
+          "입고 등록 결과를 처리하는 중 오류가 발생했습니다."
+        );
+
+
+        button.disabled = false;
+
+        button.innerText =
+          "🟢 입고 등록";
+
+      }
+
+
+      delete window[callbackName];
+
+
+      if (script.parentNode) {
+
+        script.parentNode
+          .removeChild(script);
+
+      }
+
+    };
+
+
+  /*
+   * API 호출
+   */
+
+  const script =
+    document.createElement("script");
+
+
+  const url =
+    ERP_API_URL +
+    "?action=inbound" +
+    "&barcode=" +
+    encodeURIComponent(barcode) +
+    "&quantity=" +
+    encodeURIComponent(quantity) +
+    "&purchasePrice=" +
+    encodeURIComponent(purchasePrice) +
+    "&supplier=" +
+    encodeURIComponent(supplier) +
+    "&callback=" +
+    encodeURIComponent(callbackName) +
+    "&t=" +
+    Date.now();
+
+
+  console.log(
+    "입고등록 API 요청:",
+    url
+  );
+
+
+  script.src = url;
+
+
+  script.onerror =
+    function() {
+
+      if (finished) return;
+
+      finished = true;
+
+      clearTimeout(timeout);
+
+
+      delete window[callbackName];
+
+
+      if (script.parentNode) {
+
+        script.parentNode
+          .removeChild(script);
+
+      }
+
+
+      button.disabled = false;
+
+      button.innerText =
+        "🟢 입고 등록";
+
+
+      alert(
+        "❌ ERP 서버에 연결할 수 없습니다."
+      );
+
+    };
+
+
+  document.body.appendChild(script);
 
 }
 
