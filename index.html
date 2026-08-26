@@ -312,13 +312,6 @@ function createScanner() {
     {
       fps: 10,
 
-      aspectRatio: 1.777778,
-      
-      qrbox: {
-       width: 90%,
-       height: 160
-      },
-      
       formatsToSupport: [
 
         Html5QrcodeSupportedFormats.EAN_13,
@@ -334,7 +327,7 @@ function createScanner() {
         Html5QrcodeSupportedFormats.CODE_39
 
       ]
-
+        useBarCodeDetectorIfSupported: true
     },
 
     function(decodedText) {
