@@ -85,7 +85,7 @@
       display: flex;
       justify-content: space-between;
       border-bottom: 1px solid #eee;
-      padding: 6px 0;
+      padding: 7px 0;
     }
 
     .label {
@@ -108,10 +108,6 @@
       color: white;
       font-size: 17px;
       font-weight: bold;
-    }
-
-    button:active {
-      transform: scale(0.98);
     }
 
     .success {
@@ -142,12 +138,8 @@
   <h1>📷 디어밀리 ERP</h1>
 
 
-  <!-- 카메라 -->
-
   <div id="reader"></div>
 
-
-  <!-- 상태 -->
 
   <div id="status"
        class="status">
@@ -157,14 +149,10 @@
   </div>
 
 
-  <!-- 바코드 -->
-
   <div id="barcode"
        class="barcode hidden">
   </div>
 
-
-  <!-- 상품정보 -->
 
   <div id="product"
        class="product hidden">
@@ -216,8 +204,6 @@
   </div>
 
 
-  <!-- 다시 스캔 -->
-
   <button id="startButton"
           onclick="startScanner()">
 
@@ -237,16 +223,15 @@
 </div>
 
 
-
 <script>
 
 
-/* ==================================================
-   Google Apps Script 웹앱 주소
-================================================== */
+/* ==========================================
+   ERP 웹앱 주소
+========================================== */
 
 const ERP_API_URL =
-  "https://script.google.com/macros/s/AKfycbzXviTT0QNrWy018CzCZWpR2erIxUkpk1tPJLd117WC0Pp7-HY7Lw12YHCbj9JcNCPX/exec";
+"https://script.google.com/macros/s/AKfycbzXviTT0QNrWy018CzCZWpR2erIxUkpk1tPJLd117WC0Pp7-HY7Lw12YHCbj9JcNCPX/exec";
 
 
 let scanner = null;
@@ -254,37 +239,39 @@ let scanner = null;
 let scanned = false;
 
 
-/* ==================================================
+/* ==========================================
    카메라 시작
-================================================== */
+========================================== */
 
 function startScanner() {
 
   scanned = false;
 
 
-  document.getElementById("product")
+  document
+    .getElementById("product")
     .classList.add("hidden");
 
 
-  document.getElementById("barcode")
+  document
+    .getElementById("barcode")
     .classList.add("hidden");
 
 
-  document.getElementById("againButton")
+  document
+    .getElementById("againButton")
     .classList.add("hidden");
 
 
-  document.getElementById("startButton")
+  document
+    .getElementById("startButton")
     .classList.add("hidden");
 
 
-  document.getElementById("status").innerHTML =
-    "📷 카메라를 시작하는 중입니다...";
-
-
-  document.getElementById("status").className =
-    "status";
+  setStatus(
+    "📷 카메라를 시작하는 중입니다...",
+    ""
+  );
 
 
   if (scanner) {
@@ -306,9 +293,9 @@ function startScanner() {
 }
 
 
-/* ==================================================
+/* ==========================================
    스캐너 생성
-================================================== */
+========================================== */
 
 function createScanner() {
 
@@ -323,7 +310,6 @@ function createScanner() {
     },
 
     {
-
       fps: 10,
 
       qrbox: {
@@ -365,9 +351,11 @@ function createScanner() {
 
   .then(function() {
 
-    document.getElementById("status").innerHTML =
+    setStatus(
       "📷 카메라가 켜졌습니다.<br>" +
-      "상품 바코드를 화면 안에 맞춰주세요.";
+      "상품 바코드를 화면 안에 맞춰주세요.",
+      ""
+    );
 
   })
 
@@ -375,17 +363,14 @@ function createScanner() {
 
     console.log(error);
 
-
-    document.getElementById("status").innerHTML =
+    setStatus(
       "❌ 카메라를 사용할 수 없습니다.<br><br>" +
-      "카메라 권한을 확인해주세요.";
+      "카메라 권한을 확인해주세요.",
+      "error"
+    );
 
-
-    document.getElementById("status").className =
-      "status error";
-
-
-    document.getElementById("startButton")
+    document
+      .getElementById("startButton")
       .classList.remove("hidden");
 
   });
@@ -393,9 +378,9 @@ function createScanner() {
 }
 
 
-/* ==================================================
+/* ==========================================
    바코드 인식
-================================================== */
+========================================== */
 
 function onScanSuccess(decodedText) {
 
@@ -408,20 +393,21 @@ function onScanSuccess(decodedText) {
     String(decodedText).trim();
 
 
-  document.getElementById("barcode")
+  document
+    .getElementById("barcode")
     .classList.remove("hidden");
 
 
-  document.getElementById("barcode").innerText =
-    "인식된 바코드\n" + barcode;
+  document
+    .getElementById("barcode")
+    .innerText =
+      "인식된 바코드\n" + barcode;
 
 
-  document.getElementById("status").innerHTML =
-    "🔍 상품DB에서 상품을 검색하는 중입니다...";
-
-
-  document.getElementById("status").className =
-    "status";
+  setStatus(
+    "🔍 상품DB에서 상품을 검색하는 중입니다...",
+    ""
+  );
 
 
   if (scanner) {
@@ -441,28 +427,72 @@ function onScanSuccess(decodedText) {
 }
 
 
-/* ==================================================
+/* ==========================================
    상품DB 검색
-================================================== */
+========================================== */
 
 function searchProduct(barcode) {
 
 
   /*
-   * JSONP용 고유 callback 이름
+   * 매번 새로운 callback 이름 생성
    */
 
   const callbackName =
-    "barcodeCallback_" +
+    "dearmilliCallback_" +
     Date.now();
 
 
   /*
-   * 전역 callback 생성
+   * timeout
+   */
+
+  let finished = false;
+
+
+  const timeout =
+    setTimeout(function() {
+
+      if (finished) return;
+
+      finished = true;
+
+
+      if (window[callbackName]) {
+
+        delete window[callbackName];
+
+      }
+
+
+      setStatus(
+        "❌ ERP 서버 응답 시간이 초과되었습니다.<br><br>" +
+        "잠시 후 다시 스캔해주세요.",
+        "error"
+      );
+
+
+      document
+        .getElementById("againButton")
+        .classList.remove("hidden");
+
+
+    }, 15000);
+
+
+  /*
+   * JSONP callback
    */
 
   window[callbackName] =
     function(result) {
+
+      if (finished) return;
+
+      finished = true;
+
+      clearTimeout(timeout);
+
 
       try {
 
@@ -470,13 +500,25 @@ function searchProduct(barcode) {
 
       }
 
-      finally {
+      catch(error) {
 
-        delete window[callbackName];
+        console.error(error);
 
-        if (script.parentNode) {
-          script.parentNode.removeChild(script);
-        }
+        setStatus(
+          "❌ 상품정보를 표시하는 중 오류가 발생했습니다.",
+          "error"
+        );
+
+      }
+
+
+      delete window[callbackName];
+
+
+      if (script.parentNode) {
+
+        script.parentNode
+          .removeChild(script);
 
       }
 
@@ -484,40 +526,60 @@ function searchProduct(barcode) {
 
 
   /*
-   * Google Apps Script API 호출
+   * API script 생성
    */
 
   const script =
     document.createElement("script");
 
 
-  script.src =
+  const url =
     ERP_API_URL +
     "?action=product" +
     "&barcode=" +
     encodeURIComponent(barcode) +
     "&callback=" +
-    encodeURIComponent(callbackName);
+    encodeURIComponent(callbackName) +
+    "&t=" +
+    Date.now();
+
+
+  console.log("API 요청:", url);
+
+
+  script.src = url;
 
 
   script.onerror =
     function() {
 
+      if (finished) return;
+
+      finished = true;
+
+      clearTimeout(timeout);
+
+
       delete window[callbackName];
 
+
       if (script.parentNode) {
-        script.parentNode.removeChild(script);
+
+        script.parentNode
+          .removeChild(script);
+
       }
 
 
-      document.getElementById("status").innerHTML =
-        "❌ ERP 서버에 연결할 수 없습니다.";
+      setStatus(
+        "❌ ERP 서버에 연결할 수 없습니다.<br><br>" +
+        "API 응답을 확인해주세요.",
+        "error"
+      );
 
-      document.getElementById("status").className =
-        "status error";
 
-
-      document.getElementById("againButton")
+      document
+        .getElementById("againButton")
         .classList.remove("hidden");
 
     };
@@ -528,11 +590,14 @@ function searchProduct(barcode) {
 }
 
 
-/* ==================================================
+/* ==========================================
    상품 검색 결과
-================================================== */
+========================================== */
 
 function showProductResult(result) {
+
+
+  console.log("상품 검색 결과:", result);
 
 
   if (!result) {
@@ -546,10 +611,6 @@ function showProductResult(result) {
   }
 
 
-  /*
-   * 서버 오류
-   */
-
   if (!result.success) {
 
     showError(
@@ -562,9 +623,9 @@ function showProductResult(result) {
   }
 
 
-  /*
-   * 등록된 상품
-   */
+  /* ========================================
+     등록된 상품
+  ======================================== */
 
   if (result.registered) {
 
@@ -572,11 +633,10 @@ function showProductResult(result) {
       result.product;
 
 
-    document.getElementById("status").innerHTML =
-      "✅ 상품DB에서 상품을 찾았습니다.";
-
-    document.getElementById("status").className =
-      "status success";
+    setStatus(
+      "✅ 상품DB에서 상품을 찾았습니다.",
+      "success"
+    );
 
 
     document.getElementById("sku").innerText =
@@ -613,69 +673,94 @@ function showProductResult(result) {
       "개";
 
 
-    document.getElementById("product")
+    document
+      .getElementById("product")
       .classList.remove("hidden");
-
 
   }
 
-  /*
-   * 미등록 상품
-   */
+
+  /* ========================================
+     미등록 상품
+  ======================================== */
 
   else {
 
-    document.getElementById("status").innerHTML =
-      "⚠️ 상품DB에 없는 바코드입니다.<br>" +
-      "신규 상품으로 등록할 수 있습니다.";
-
-    document.getElementById("status").className =
-      "status warning";
+    setStatus(
+      "⚠️ 상품DB에 없는 바코드입니다.",
+      "warning"
+    );
 
   }
 
 
-  document.getElementById("againButton")
+  document
+    .getElementById("againButton")
     .classList.remove("hidden");
 
 }
 
 
-/* ==================================================
-   오류 표시
-================================================== */
+/* ==========================================
+   오류
+========================================== */
 
 function showError(message) {
 
-  document.getElementById("status").innerHTML =
-    "❌ " + message;
+  setStatus(
+    "❌ " + message,
+    "error"
+  );
 
 
-  document.getElementById("status").className =
-    "status error";
-
-
-  document.getElementById("againButton")
+  document
+    .getElementById("againButton")
     .classList.remove("hidden");
 
 }
 
 
-/* ==================================================
+/* ==========================================
+   상태 표시
+========================================== */
+
+function setStatus(message, type) {
+
+  const status =
+    document.getElementById("status");
+
+
+  status.innerHTML =
+    message;
+
+
+  status.className =
+    "status";
+
+
+  if (type) {
+
+    status.classList.add(type);
+
+  }
+
+}
+
+
+/* ==========================================
    숫자 표시
-================================================== */
+========================================== */
 
 function formatNumber(value) {
 
-  const number =
-    Number(value) || 0;
-
-
-  return number.toLocaleString("ko-KR");
+  return (
+    Number(value) || 0
+  ).toLocaleString("ko-KR");
 
 }
 
 </script>
 
 </body>
+
 </html>
