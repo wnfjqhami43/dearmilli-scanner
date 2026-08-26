@@ -60,6 +60,7 @@
       font-size: 20px;
       font-weight: bold;
       word-break: break-all;
+      white-space: pre-line;
     }
 
     button {
@@ -72,6 +73,10 @@
       color: white;
       font-size: 17px;
       font-weight: bold;
+    }
+
+    button:active {
+      transform: scale(0.98);
     }
 
     .success {
@@ -93,7 +98,7 @@
   <div id="reader"></div>
 
   <div id="status" class="status">
-    카메라를 준비하는 중입니다...
+    아래 버튼을 눌러 카메라를 시작해주세요.
   </div>
 
   <div id="barcode"
@@ -101,7 +106,12 @@
        style="display:none;">
   </div>
 
-  <button id="again"
+  <button id="startButton"
+          onclick="startScanner()">
+    📷 카메라 시작
+  </button>
+
+  <button id="againButton"
           style="display:none;"
           onclick="startScanner()">
     📷 다시 스캔
@@ -117,24 +127,27 @@ let scanned = false;
 
 
 /* =========================================
-   스캐너 시작
+   카메라 시작
 ========================================= */
 
 function startScanner() {
 
   scanned = false;
 
-  document.getElementById("again").style.display =
-    "none";
+  document.getElementById("status").innerHTML =
+    "📷 카메라를 시작하는 중입니다...";
+
+  document.getElementById("status").className =
+    "status";
 
   document.getElementById("barcode").style.display =
     "none";
 
-  document.getElementById("status").innerHTML =
-    "📷 바코드를 카메라 안에 맞춰주세요.";
+  document.getElementById("againButton").style.display =
+    "none";
 
-  document.getElementById("status").className =
-    "status";
+  document.getElementById("startButton").style.display =
+    "none";
 
 
   if (scanner) {
@@ -157,7 +170,7 @@ function startScanner() {
 
 
 /* =========================================
-   카메라 생성
+   스캐너 생성
 ========================================= */
 
 function createScanner() {
@@ -172,7 +185,6 @@ function createScanner() {
     },
 
     {
-
       fps: 10,
 
       qrbox: {
@@ -190,7 +202,6 @@ function createScanner() {
         Html5QrcodeSupportedFormats.CODE_39
 
       ]
-
     },
 
     function(decodedText) {
@@ -201,23 +212,33 @@ function createScanner() {
 
     function(errorMessage) {
 
-      // 스캔 실패 메시지는 무시
-      // 카메라가 계속 바코드를 찾도록 함
+      // 계속 스캔 중이므로 오류 메시지는 표시하지 않음
 
     }
 
   )
 
+  .then(function() {
+
+    document.getElementById("status").innerHTML =
+      "📷 카메라가 켜졌습니다.<br>" +
+      "상품 바코드를 화면 안에 맞춰주세요.";
+
+  })
+
   .catch(function(error) {
+
+    console.log(error);
 
     document.getElementById("status").innerHTML =
       "❌ 카메라를 사용할 수 없습니다.<br><br>" +
-      "휴대폰 브라우저의 카메라 권한을 확인해주세요.";
+      "휴대폰 브라우저에서 카메라 권한을 허용해주세요.";
 
     document.getElementById("status").className =
       "status error";
 
-    console.log(error);
+    document.getElementById("startButton").style.display =
+      "block";
 
   });
 
@@ -225,7 +246,7 @@ function createScanner() {
 
 
 /* =========================================
-   바코드 인식 성공
+   바코드 인식
 ========================================= */
 
 function onScanSuccess(decodedText) {
@@ -265,11 +286,15 @@ function onScanSuccess(decodedText) {
   }
 
 
-  document.getElementById("again").style.display =
+  document.getElementById("againButton").style.display =
     "block";
 
 }
 
+</script>
+
+</body>
+</html>
 </script>
 
 </body>
