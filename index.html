@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
+
   <meta charset="UTF-8">
 
   <meta name="viewport"
@@ -12,6 +14,7 @@
           type="text/javascript"></script>
 
   <style>
+
     * {
       box-sizing: border-box;
     }
@@ -21,6 +24,7 @@
       padding: 20px;
       background: #f5f5f5;
       font-family: Arial, sans-serif;
+      color: #222;
     }
 
     .container {
@@ -48,7 +52,7 @@
       border-radius: 12px;
       text-align: center;
       font-size: 16px;
-      line-height: 1.5;
+      line-height: 1.6;
     }
 
     .barcode {
@@ -56,11 +60,42 @@
       padding: 16px;
       background: white;
       border-radius: 12px;
-      text-align: center;
-      font-size: 20px;
+      font-size: 18px;
       font-weight: bold;
+      text-align: center;
       word-break: break-all;
       white-space: pre-line;
+    }
+
+    .product {
+      margin-top: 15px;
+      padding: 18px;
+      background: white;
+      border-radius: 12px;
+      line-height: 1.8;
+    }
+
+    .product-title {
+      font-size: 19px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid #eee;
+      padding: 6px 0;
+    }
+
+    .label {
+      color: #777;
+    }
+
+    .value {
+      font-weight: bold;
+      text-align: right;
+      margin-left: 15px;
     }
 
     button {
@@ -83,11 +118,22 @@
       color: #16803c;
     }
 
+    .warning {
+      color: #c77700;
+    }
+
     .error {
       color: #c62828;
     }
+
+    .hidden {
+      display: none;
+    }
+
   </style>
+
 </head>
+
 
 <body>
 
@@ -95,59 +141,150 @@
 
   <h1>📷 디어밀리 ERP</h1>
 
+
+  <!-- 카메라 -->
+
   <div id="reader"></div>
 
-  <div id="status" class="status">
+
+  <!-- 상태 -->
+
+  <div id="status"
+       class="status">
+
     아래 버튼을 눌러 카메라를 시작해주세요.
+
   </div>
 
+
+  <!-- 바코드 -->
+
   <div id="barcode"
-       class="barcode"
-       style="display:none;">
+       class="barcode hidden">
   </div>
+
+
+  <!-- 상품정보 -->
+
+  <div id="product"
+       class="product hidden">
+
+    <div class="product-title">
+      📦 상품정보
+    </div>
+
+    <div class="row">
+      <span class="label">SKU</span>
+      <span class="value" id="sku"></span>
+    </div>
+
+    <div class="row">
+      <span class="label">브랜드</span>
+      <span class="value" id="brand"></span>
+    </div>
+
+    <div class="row">
+      <span class="label">모델명</span>
+      <span class="value" id="modelName"></span>
+    </div>
+
+    <div class="row">
+      <span class="label">모델코드</span>
+      <span class="value" id="modelCode"></span>
+    </div>
+
+    <div class="row">
+      <span class="label">사이즈</span>
+      <span class="value" id="size"></span>
+    </div>
+
+    <div class="row">
+      <span class="label">성별</span>
+      <span class="value" id="gender"></span>
+    </div>
+
+    <div class="row">
+      <span class="label">상품DB 매입가</span>
+      <span class="value" id="purchasePrice"></span>
+    </div>
+
+    <div class="row">
+      <span class="label">현재재고</span>
+      <span class="value" id="currentStock"></span>
+    </div>
+
+  </div>
+
+
+  <!-- 다시 스캔 -->
 
   <button id="startButton"
           onclick="startScanner()">
+
     📷 카메라 시작
+
   </button>
 
+
   <button id="againButton"
-          style="display:none;"
+          class="hidden"
           onclick="startScanner()">
+
     📷 다시 스캔
+
   </button>
 
 </div>
 
 
+
 <script>
 
+
+/* ==================================================
+   Google Apps Script 웹앱 주소
+================================================== */
+
+const ERP_API_URL =
+  "https://script.google.com/macros/s/AKfycbzXviTT0QNrWy018CzCZWpR2erIxUkpk1tPJLd117WC0Pp7-HY7Lw12YHCbj9JcNCPX/exec";
+
+
 let scanner = null;
+
 let scanned = false;
 
 
-/* =========================================
+/* ==================================================
    카메라 시작
-========================================= */
+================================================== */
 
 function startScanner() {
 
   scanned = false;
 
+
+  document.getElementById("product")
+    .classList.add("hidden");
+
+
+  document.getElementById("barcode")
+    .classList.add("hidden");
+
+
+  document.getElementById("againButton")
+    .classList.add("hidden");
+
+
+  document.getElementById("startButton")
+    .classList.add("hidden");
+
+
   document.getElementById("status").innerHTML =
     "📷 카메라를 시작하는 중입니다...";
 
+
   document.getElementById("status").className =
     "status";
-
-  document.getElementById("barcode").style.display =
-    "none";
-
-  document.getElementById("againButton").style.display =
-    "none";
-
-  document.getElementById("startButton").style.display =
-    "none";
 
 
   if (scanner) {
@@ -169,13 +306,14 @@ function startScanner() {
 }
 
 
-/* =========================================
+/* ==================================================
    스캐너 생성
-========================================= */
+================================================== */
 
 function createScanner() {
 
-  scanner = new Html5Qrcode("reader");
+  scanner =
+    new Html5Qrcode("reader");
 
 
   scanner.start(
@@ -185,6 +323,7 @@ function createScanner() {
     },
 
     {
+
       fps: 10,
 
       qrbox: {
@@ -195,13 +334,19 @@ function createScanner() {
       formatsToSupport: [
 
         Html5QrcodeSupportedFormats.EAN_13,
+
         Html5QrcodeSupportedFormats.EAN_8,
+
         Html5QrcodeSupportedFormats.UPC_A,
+
         Html5QrcodeSupportedFormats.UPC_E,
+
         Html5QrcodeSupportedFormats.CODE_128,
+
         Html5QrcodeSupportedFormats.CODE_39
 
       ]
+
     },
 
     function(decodedText) {
@@ -212,7 +357,7 @@ function createScanner() {
 
     function(errorMessage) {
 
-      // 계속 스캔 중이므로 오류 메시지는 표시하지 않음
+      // 계속 스캔 중이므로 무시
 
     }
 
@@ -230,24 +375,27 @@ function createScanner() {
 
     console.log(error);
 
+
     document.getElementById("status").innerHTML =
       "❌ 카메라를 사용할 수 없습니다.<br><br>" +
-      "휴대폰 브라우저에서 카메라 권한을 허용해주세요.";
+      "카메라 권한을 확인해주세요.";
+
 
     document.getElementById("status").className =
       "status error";
 
-    document.getElementById("startButton").style.display =
-      "block";
+
+    document.getElementById("startButton")
+      .classList.remove("hidden");
 
   });
 
 }
 
 
-/* =========================================
+/* ==================================================
    바코드 인식
-========================================= */
+================================================== */
 
 function onScanSuccess(decodedText) {
 
@@ -260,18 +408,20 @@ function onScanSuccess(decodedText) {
     String(decodedText).trim();
 
 
-  document.getElementById("barcode").style.display =
-    "block";
+  document.getElementById("barcode")
+    .classList.remove("hidden");
+
 
   document.getElementById("barcode").innerText =
     "인식된 바코드\n" + barcode;
 
 
   document.getElementById("status").innerHTML =
-    "✅ 바코드 인식 성공!";
+    "🔍 상품DB에서 상품을 검색하는 중입니다...";
+
 
   document.getElementById("status").className =
-    "status success";
+    "status";
 
 
   if (scanner) {
@@ -286,15 +436,245 @@ function onScanSuccess(decodedText) {
   }
 
 
-  document.getElementById("againButton").style.display =
-    "block";
+  searchProduct(barcode);
 
 }
 
-</script>
 
-</body>
-</html>
+/* ==================================================
+   상품DB 검색
+================================================== */
+
+function searchProduct(barcode) {
+
+
+  /*
+   * JSONP용 고유 callback 이름
+   */
+
+  const callbackName =
+    "barcodeCallback_" +
+    Date.now();
+
+
+  /*
+   * 전역 callback 생성
+   */
+
+  window[callbackName] =
+    function(result) {
+
+      try {
+
+        showProductResult(result);
+
+      }
+
+      finally {
+
+        delete window[callbackName];
+
+        if (script.parentNode) {
+          script.parentNode.removeChild(script);
+        }
+
+      }
+
+    };
+
+
+  /*
+   * Google Apps Script API 호출
+   */
+
+  const script =
+    document.createElement("script");
+
+
+  script.src =
+    ERP_API_URL +
+    "?action=product" +
+    "&barcode=" +
+    encodeURIComponent(barcode) +
+    "&callback=" +
+    encodeURIComponent(callbackName);
+
+
+  script.onerror =
+    function() {
+
+      delete window[callbackName];
+
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+
+
+      document.getElementById("status").innerHTML =
+        "❌ ERP 서버에 연결할 수 없습니다.";
+
+      document.getElementById("status").className =
+        "status error";
+
+
+      document.getElementById("againButton")
+        .classList.remove("hidden");
+
+    };
+
+
+  document.body.appendChild(script);
+
+}
+
+
+/* ==================================================
+   상품 검색 결과
+================================================== */
+
+function showProductResult(result) {
+
+
+  if (!result) {
+
+    showError(
+      "상품 검색 결과가 없습니다."
+    );
+
+    return;
+
+  }
+
+
+  /*
+   * 서버 오류
+   */
+
+  if (!result.success) {
+
+    showError(
+      result.message ||
+      "상품 검색에 실패했습니다."
+    );
+
+    return;
+
+  }
+
+
+  /*
+   * 등록된 상품
+   */
+
+  if (result.registered) {
+
+    const p =
+      result.product;
+
+
+    document.getElementById("status").innerHTML =
+      "✅ 상품DB에서 상품을 찾았습니다.";
+
+    document.getElementById("status").className =
+      "status success";
+
+
+    document.getElementById("sku").innerText =
+      p.sku || "-";
+
+
+    document.getElementById("brand").innerText =
+      p.brand || "-";
+
+
+    document.getElementById("modelName").innerText =
+      p.modelName || "-";
+
+
+    document.getElementById("modelCode").innerText =
+      p.modelCode || "-";
+
+
+    document.getElementById("size").innerText =
+      p.size || "-";
+
+
+    document.getElementById("gender").innerText =
+      p.gender || "-";
+
+
+    document.getElementById("purchasePrice").innerText =
+      formatNumber(p.purchasePrice) +
+      "원";
+
+
+    document.getElementById("currentStock").innerText =
+      formatNumber(p.currentStock) +
+      "개";
+
+
+    document.getElementById("product")
+      .classList.remove("hidden");
+
+
+  }
+
+  /*
+   * 미등록 상품
+   */
+
+  else {
+
+    document.getElementById("status").innerHTML =
+      "⚠️ 상품DB에 없는 바코드입니다.<br>" +
+      "신규 상품으로 등록할 수 있습니다.";
+
+    document.getElementById("status").className =
+      "status warning";
+
+  }
+
+
+  document.getElementById("againButton")
+    .classList.remove("hidden");
+
+}
+
+
+/* ==================================================
+   오류 표시
+================================================== */
+
+function showError(message) {
+
+  document.getElementById("status").innerHTML =
+    "❌ " + message;
+
+
+  document.getElementById("status").className =
+    "status error";
+
+
+  document.getElementById("againButton")
+    .classList.remove("hidden");
+
+}
+
+
+/* ==================================================
+   숫자 표시
+================================================== */
+
+function formatNumber(value) {
+
+  const number =
+    Number(value) || 0;
+
+
+  return number.toLocaleString("ko-KR");
+
+}
+
 </script>
 
 </body>
