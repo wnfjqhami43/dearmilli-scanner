@@ -1476,7 +1476,189 @@ function registerInboundFromPhone() {
   document.body.appendChild(script);
 
 }
+/* ==========================================
+   판매처 목록 불러오기
+========================================== */
 
+function loadSalesPlatforms() {
+
+  const select =
+    document.getElementById("salesPlatform");
+
+  if (!select) return;
+
+
+  const callbackName =
+    "salesPlatformsCallback_" +
+    Date.now();
+
+
+  let finished = false;
+
+
+  const script =
+    document.createElement("script");
+
+
+  const timeout =
+    setTimeout(function() {
+
+      if (finished) return;
+
+      finished = true;
+
+      delete window[callbackName];
+
+
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+
+
+      select.innerHTML =
+        '<option value="">판매처를 불러오지 못했습니다.</option>';
+
+    }, 15000);
+
+
+  window[callbackName] =
+    function(result) {
+
+      if (finished) return;
+
+      finished = true;
+
+      clearTimeout(timeout);
+
+
+      try {
+
+        select.innerHTML =
+          '<option value="">판매처 선택</option>';
+
+
+        if (
+          result &&
+          result.success &&
+          Array.isArray(result.platforms)
+        ) {
+
+          result.platforms.forEach(function(platform) {
+
+            const option =
+              document.createElement("option");
+
+            option.value =
+              platform.name;
+
+            option.textContent =
+              platform.name;
+
+            select.appendChild(option);
+
+          });
+
+
+          if (result.platforms.length === 0) {
+
+            select.innerHTML =
+              '<option value="">등록된 판매처가 없습니다.</option>';
+
+          }
+
+        }
+
+        else {
+
+          select.innerHTML =
+            '<option value="">판매처를 불러오지 못했습니다.</option>';
+
+        }
+
+      }
+
+      catch(error) {
+
+        console.error(
+          "판매처 목록 오류:",
+          error
+        );
+
+        select.innerHTML =
+          '<option value="">판매처를 불러오지 못했습니다.</option>';
+
+      }
+
+
+      delete window[callbackName];
+
+
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+
+    };
+
+
+  const url =
+    ERP_API_URL +
+    "?action=salesPlatforms" +
+    "&callback=" +
+    encodeURIComponent(callbackName) +
+    "&t=" +
+    Date.now();
+
+
+  console.log(
+    "판매처 목록 API 요청:",
+    url
+  );
+
+
+  script.src = url;
+
+
+  script.onerror =
+    function() {
+
+      if (finished) return;
+
+      finished = true;
+
+      clearTimeout(timeout);
+
+      delete window[callbackName];
+
+
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+
+
+      select.innerHTML =
+        '<option value="">판매처를 불러오지 못했습니다.</option>';
+
+    };
+
+
+  document.body.appendChild(script);
+
+}
+
+
+/* ==========================================
+   페이지 시작 시 판매처 목록 불러오기
+========================================== */
+
+document.addEventListener(
+  "DOMContentLoaded",
+  function() {
+
+    loadSalesPlatforms();
+
+  }
+);
+  
 </script>
 
 </body>
