@@ -348,7 +348,187 @@
     📷 다시 스캔
 
   </button>
+    <!-- ==========================================
+         판매 등록
+    =========================================== -->
 
+    <div
+      id="salesForm"
+      class="product hidden"
+      style="margin-top:20px;"
+    >
+
+      <div class="product-title">
+        📤 판매 등록
+      </div>
+
+
+      <!-- 판매수량 -->
+
+      <div style="margin-top:15px;">
+
+        <label style="display:block;
+                      margin-bottom:6px;
+                      color:#777;">
+
+          판매수량
+
+        </label>
+
+        <input
+          type="number"
+          id="salesQuantity"
+          value="1"
+          min="1"
+          step="1"
+          inputmode="numeric"
+          style="
+            width:100%;
+            padding:14px;
+            border:1px solid #ddd;
+            border-radius:10px;
+            font-size:17px;
+          "
+        >
+
+      </div>
+
+
+      <!-- 판매처 -->
+
+      <div style="margin-top:15px;">
+
+        <label style="display:block;
+                      margin-bottom:6px;
+                      color:#777;">
+
+          판매처
+
+        </label>
+
+        <select
+          id="salesPlatform"
+          style="
+            width:100%;
+            padding:14px;
+            border:1px solid #ddd;
+            border-radius:10px;
+            font-size:17px;
+            background:white;
+          "
+        >
+
+          <option value="">
+            판매처 불러오는 중...
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- 판매가 -->
+
+      <div style="margin-top:15px;">
+
+        <label style="display:block;
+                      margin-bottom:6px;
+                      color:#777;">
+
+          판매가
+
+        </label>
+
+        <input
+          type="number"
+          id="salesPrice"
+          min="0"
+          step="100"
+          inputmode="numeric"
+          placeholder="총 판매금액 입력"
+          style="
+            width:100%;
+            padding:14px;
+            border:1px solid #ddd;
+            border-radius:10px;
+            font-size:17px;
+          "
+        >
+
+      </div>
+
+
+      <!-- 배송비 -->
+
+      <div style="margin-top:15px;">
+
+        <label style="display:block;
+                      margin-bottom:6px;
+                      color:#777;">
+
+          배송비
+
+        </label>
+
+        <input
+          type="number"
+          id="salesShipping"
+          value="0"
+          min="0"
+          step="100"
+          inputmode="numeric"
+          style="
+            width:100%;
+            padding:14px;
+            border:1px solid #ddd;
+            border-radius:10px;
+            font-size:17px;
+          "
+        >
+
+      </div>
+
+
+      <!-- 비고 -->
+
+      <div style="margin-top:15px;">
+
+        <label style="display:block;
+                      margin-bottom:6px;
+                      color:#777;">
+
+          비고
+
+        </label>
+
+        <input
+          type="text"
+          id="salesMemo"
+          placeholder="필요한 경우 입력"
+          style="
+            width:100%;
+            padding:14px;
+            border:1px solid #ddd;
+            border-radius:10px;
+            font-size:17px;
+          "
+        >
+
+      </div>
+
+
+      <!-- 판매 등록 버튼 -->
+
+      <button
+        id="salesButton"
+        onclick="registerSalesFromPhone()"
+        style="margin-top:18px;">
+
+        🔵 판매 등록
+
+      </button>
+
+    </div>
 </div>
 
 
@@ -841,24 +1021,30 @@ function showProductResult(result) {
 
 
   document
-    .getElementById("againButton")
-    .classList.remove("hidden");
-   
+  .getElementById("againButton")
+  .classList.remove("hidden");
+
+
+// 등록된 상품일 때만 입고등록 표시
+if (result.registered) {
+
   document
     .getElementById("inboundForm")
     .classList.remove("hidden");
 
 
-    /*
-     * 상품DB 매입가를
-     * 실제 매입가 입력칸에 기본값으로 넣기
-     */
+  /*
+   * 상품DB 매입가를
+   * 실제 매입가 입력칸에 기본값으로 넣기
+   */
 
-    document.getElementById(
-      "inboundPurchasePrice"
-    ).value =
-      p.purchasePrice || 0;
- 
+  document.getElementById(
+    "inboundPurchasePrice"
+  ).value =
+    result.product.purchasePrice || 0;
+
+}
+  
 }
 
 
@@ -918,7 +1104,7 @@ function formatNumber(value) {
     Number(value) || 0
   ).toLocaleString("ko-KR");
 
-}/* ==========================================
+}/*==========================================
    휴대폰 입고 등록
 ========================================== */
 
