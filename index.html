@@ -220,13 +220,14 @@
   </div>
 
   <div class="form-group">
-    <label>SKU *</label>
-    <input
-      type="text"
-      id="newProductSku"
-      placeholder="예: NK-HQ7955001-230"
-    >
-  </div>
+  <label>SKU</label>
+  <input
+    type="text"
+    id="newProductSku"
+    placeholder="브랜드·모델코드·사이즈 입력 시 자동생성"
+    readonly
+  >
+</div>
 
   <div class="form-group">
     <label>브랜드</label>
@@ -234,6 +235,7 @@
       type="text"
       id="newProductBrand"
       placeholder="예: NIKE"
+      oninput="generateNewProductSku()"
     >
   </div>
 
@@ -261,6 +263,7 @@
       type="text"
       id="newProductModelCode"
       placeholder="예: HQ7955-001"
+      oninput="generateNewProductSku()"
     >
   </div>
 
@@ -270,6 +273,7 @@
       type="text"
       id="newProductSize"
       placeholder="예: 230"
+      oninput="generateNewProductSku()"
     >
   </div>
 
@@ -2178,10 +2182,7 @@ function registerNewProduct() {
 
   const barcode =
     document.getElementById("newProductBarcode").value.trim();
-
-  const sku =
-    document.getElementById("newProductSku").value.trim();
-
+  
   const brand =
     document.getElementById("newProductBrand").value.trim();
 
@@ -2215,13 +2216,7 @@ function registerNewProduct() {
     return;
   }
 
-  if (!sku) {
-    alert("SKU를 입력해주세요.");
-    return;
-  }
-
-
-  const callbackName =
+   const callbackName =
     "registerProductCallback_" +
     Date.now();
 
@@ -2267,8 +2262,6 @@ function registerNewProduct() {
     action: "registerProduct",
 
     barcode: barcode,
-
-    sku: sku,
 
     brand: brand,
 
@@ -2320,7 +2313,92 @@ function registerNewProduct() {
     .body
     .appendChild(script);
 
-}  
+} 
+  // ========================================
+// 신규상품 SKU 자동생성
+// ========================================
+
+function generateNewProductSku() {
+
+  const brand =
+    document
+      .getElementById("newProductBrand")
+      .value
+      .trim();
+
+  const modelCode =
+    document
+      .getElementById("newProductModelCode")
+      .value
+      .trim();
+
+  const size =
+    document
+      .getElementById("newProductSize")
+      .value
+      .trim();
+
+  const skuInput =
+    document
+      .getElementById("newProductSku");
+
+
+  const brandCodes = {
+
+    "nike": "NK",
+    "adidas": "AD",
+    "new balance": "NB",
+    "asics": "AS",
+    "nepa": "NP",
+    "columbia": "CB",
+    "guess": "GS",
+    "skechers": "SK",
+    "fila": "FL",
+    "fitflop": "FF",
+    "salomon": "SL",
+    "hoka": "HK",
+    "puma": "PM",
+    "ballop": "BA"
+
+  };
+
+
+  const brandCode =
+    brandCodes[
+      brand.toLowerCase()
+    ] || "";
+
+
+  const cleanModelCode =
+    modelCode
+      .replace(/-/g, "")
+      .replace(/\s+/g, "");
+
+  const cleanSize =
+    size.replace(/\s+/g, "");
+
+
+  if (
+    !brandCode ||
+    !cleanModelCode ||
+    !cleanSize
+  ) {
+
+    skuInput.value = "";
+
+    return;
+
+  }
+
+
+  skuInput.value =
+    brandCode +
+    "-" +
+    cleanModelCode +
+    "-" +
+    cleanSize;
+
+}
 </script>
 
 </body>
