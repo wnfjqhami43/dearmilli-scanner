@@ -1119,21 +1119,20 @@ function showProductResult(result) {
 
   }
 
+ /* ========================================
+   미등록 상품
+======================================== */
 
-  /* ========================================
-     미등록 상품
-  ======================================== */
-
-  else {
+else {
 
   setStatus(
     "⚠️ 상품DB에 없는 바코드입니다.",
     "warning"
   );
 
-  // 새 상품 등록 버튼 표시
+  // 새 상품 등록 폼 표시
   document
-    .getElementById("newProductButton")
+    .getElementById("newProductForm")
     .classList.remove("hidden");
 
   // 스캔한 바코드 자동 입력
